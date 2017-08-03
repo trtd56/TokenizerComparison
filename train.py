@@ -1,10 +1,11 @@
 # -*- cording: utf-8 -*-
 
-from chainer import optimizer, optimizers
-import chainer.links as L
-import chainer.functions as F
 import random
 import numpy as np
+import chainer.links as L
+import chainer.functions as F
+from chainer import optimizer, optimizers
+from datetime import datetime
 
 from net import MLP
 from str2idx import Str2idx
@@ -28,17 +29,31 @@ def parse_batch(batch):
     t = np.array([t for t, _ in batch], dtype=np.int32)
     return x, t
 
-train, test = load_data("./data/KNBC_v1.0_090925/corpus2/")
+class LogTracer():
 
+    def __init__(self, path):
+        now = datetime.now().strftime("%Y%m%d%H%M%S")
+        self.path = path + "/" + now + "_train_log.csv"
+        log = "{}.{},{},{}".format("time", "epoch", "loss", "acc")
+        with open(self.path, "w") as f:
+            f.write(log)
+
+    def __call__(self, epoch, loss, acc):
+        now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        log = "\n{},{},{},{}".format(now, epoch, loss, acc)
+        with open(self.path, "a") as f:
+            f.write(log)
+
+log_tracer = LogTracer("./data/log/")
+
+train, test = load_data("./data/KNBC_v1.0_090925/corpus2/")
 
 train["text"] = train["text"].apply(wakati_mecab)
 test["text"] = test["text"].apply(wakati_mecab)
 
-
 str2idx = Str2idx(train)
 train = str2idx(train)
 test = str2idx(test)
-
 
 n_vocab = 5000
 n_units = 50
@@ -64,4 +79,4 @@ for epoch in range(n_epoch):
         x, t = parse_batch(test)
         y = mlp(x)
         acc = F.accuracy(y, t)
-        print("{}\t{}\t{}".format(epoch, loss.data, acc.data))
+        log_tracer(epoch, loss.data, acc.data)
