@@ -7,6 +7,7 @@ import numpy as np
 class Str2idx():
     __MAX_COUNT = 100
     __MIN_COUNT = 3
+    __IGNORE = -1
 
     def __init__(self, data):
         # label to id
@@ -24,12 +25,25 @@ class Str2idx():
         for i, v in enumerate(w_freq.keys()):
             self.w_dic[v] += i + 1
 
-    def doc2ids(self, doc):
+        # sentence max
+        self.max_l = max(len(i.split()) for i in data["text"].tolist())
+
+    def padding(self, arr):
+        n = self.max_l - len(arr)
+        for _ in range(n):
+            arr.append(self.__IGNORE)
+        return arr
+
+    def doc2ids(self, doc, pad):
         doc = doc.split(" ")
-        return np.array([self.w_dic[d] for d in doc], dtype=np.int32)
+        idx = [self.w_dic[d] for d in doc]
+        if pad:
+            idx = idx[:self.max_l]
+            idx = self.padding(idx)
+        return np.array(idx, dtype=np.int32)
 
     def label2id(self, lab):
         return np.array(self.l_dic[lab], dtype=np.int32)
 
-    def __call__(self, data):
-        return [(self.label2id(t), self.doc2ids(x)) for t, x in zip(data["label"], data["text"])]
+    def __call__(self, data, pad):
+        return [(self.label2id(t), self.doc2ids(x, pad)) for t, x in zip(data["label"], data["text"])]
