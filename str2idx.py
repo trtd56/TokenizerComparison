@@ -5,8 +5,8 @@ from collections import defaultdict
 import numpy as np
 
 class Str2idx():
-    __MAX_COUNT = 100
-    __MIN_COUNT = 3
+    __MAX_COUNT = 5000
+    __MIN_COUNT = 1
     __IGNORE = -1
 
     def __init__(self, data):
