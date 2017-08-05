@@ -1,67 +1,49 @@
 # -*- cording: utf-8 -*-
 
-import random
-import numpy as np
-import chainer.links as L
 import chainer.functions as F
 from chainer import optimizer, optimizers
 
-from net import MLP
-from str2idx import Str2idx
+import net
 from log_tracer import LogTracer
-from make_train_data import load_data, wakati_mecab
+from func import get_train_data, set_seed, generate_bath, parse_batch
 
-def shuffle_list(l):
-    rand_i = random.sample(range(len(l)), len(l))
-    return [l[i] for i in rand_i]
-
-def generate_bath(data, size):
-    data = shuffle_list(data)
-    batch = []
-    for d in data:
-        batch.append(d)
-        if len(batch) >= size:
-            yield parse_batch(batch)
-            batch = []
-
-def parse_batch(batch):
-    x = [x for _, x in batch]
-    t = np.array([t for t, _ in batch], dtype=np.int32)
-    return x, t
-
-def get_train_data(path, wakati_func):
-    train, test = load_data(path)
-    train["text"] = train["text"].apply(wakati_func)
-    test["text"] = test["text"].apply(wakati_func)
-    str2idx = Str2idx(train)
-    train = str2idx(train)
-    test = str2idx(test)
-    return train, test
-
-corpus_path = "./data/KNBC_v1.0_090925/corpus2/"
+nn_type = "cnn"
+sep_mode = "character"
 n_vocab = 5000
 n_units = 50
 n_layers = 1
 n_batch = 50
 n_out = 4
 n_epoch = 10
+ksize = 5
+stride = 1
 
-train, test = get_train_data(corpus_path, wakati_mecab)
-log_tracer = LogTracer()
 
-mlp = MLP(n_vocab, n_units, n_layers, n_out)
-opt = optimizers.SGD()
-opt.setup(mlp)
+if __name__ == "__main__":
+    set_seed()
+    log_tracer = LogTracer()
 
-for epoch in range(n_epoch):
-    for x, t in generate_bath(train, n_batch):
-        mlp.cleargrads()
-        loss = mlp(x, t)
-        loss.backward()
-        opt.update()
-        loss.unchain_backward()
+    log_tracer.trace("set network")
+    if nn_type == "lstm":
+        mlp = net.LSTM(n_vocab, n_units, n_layers, n_out)
+    elif nn_type == "cnn":
+        mlp = net.CNN(n_vocab, n_units, n_layers, n_out, ksize, stride)
+    opt = optimizers.SGD()
+    opt.setup(mlp)
 
-        x, t = parse_batch(test)
-        y = mlp(x)
-        acc = F.accuracy(y, t)
-        log_tracer(epoch, loss.data, acc.data)
+    log_tracer.trace("get train data")
+    pad = type(mlp) is net.CNN
+    train, test = get_train_data(pad, sep_mode)
+
+    log_tracer.trace("start train")
+    for epoch in range(n_epoch):
+        for x, t in generate_bath(train, n_batch):
+            mlp.cleargrads()
+            loss = mlp(x, t)
+            loss.backward()
+            opt.update()
+            loss.unchain_backward()
+            x, t = parse_batch(test)
+            y = mlp(x)
+            acc = F.accuracy(y, t)
+            log_tracer(epoch, loss.data, acc.data, trace=True)
