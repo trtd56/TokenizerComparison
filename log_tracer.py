@@ -11,6 +11,10 @@ class LogTracer():
         with open(self.path, "w") as f:
             f.write(log)
 
+    def trace(self, out):
+        now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        print("{}\t{}".format(now, out))
+
     def __call__(self, epoch, loss, acc, trace=False):
         now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
         log = "\n{},{},{},{}".format(now, epoch, loss, acc)
