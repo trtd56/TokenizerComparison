@@ -2,3 +2,4 @@
 *.tar.bz2
 *KNBC_v1.0_090925*
 data/log/*
+models/sentencepiece/*

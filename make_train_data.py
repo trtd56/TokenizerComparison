@@ -6,7 +6,6 @@ import MeCab
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-WAKATI = MeCab.Tagger("-Ochasen")
 SEED = 0
 RATE = 0.1
 
@@ -30,9 +29,3 @@ def to_df(x, t):
     df = pd.DataFrame([(tt, xx) for xx, tt in zip(x, t)])
     df.columns = ["label", "text"]
     return df
-
-def wakati_mecab(doc):
-    doc = WAKATI.parse(doc)
-    doc = [i.split("\t")[0] for i in doc.split("\n")]
-    doc = [d for d in doc if not d in ["", "EOS"]]
-    return " ".join(doc)
