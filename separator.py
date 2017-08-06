@@ -21,7 +21,7 @@ class Separator():
         self.model_path = path + "/" + self.__MODEL_PATH
 
     def wakati_mecab(self, doc):
-        doc = WAKATI.parse(doc)
+        doc = self.wakati.parse(doc)
         doc = [i.split("\t")[0] for i in doc.split("\n")]
         doc = [d for d in doc if not d in ["", "EOS"]]
         return doc
