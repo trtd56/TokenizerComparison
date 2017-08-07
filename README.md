@@ -8,6 +8,12 @@ $ cd ./data
 $ wget ftp://ftp.za.freebsd.org/macports/distfiles/KNBC/KNBC_v1.0_090925.tar.bz2
 $ tar xf KNBC_v1.0_090925.tar.bz2
 ~~~
+#### 準備
+
+~~~
+$ mkdir models/net models/sentencepiece
+~~~
+
 #### メモ
 
 SentencePieceをCentOSにインストールする場合は下記モジュールもインストールしておく.

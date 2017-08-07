@@ -3,3 +3,4 @@
 *KNBC_v1.0_090925*
 data/log/*
 models/sentencepiece/*
+models/net/*
