@@ -71,6 +71,7 @@ def get_train_data(pad, mode):
     test = sep.sep_df_text(test, sentencepiece)
     # word to id
     str2idx = Str2idx(train)
+    n_vocab = str2idx.get_n_vocab()
     train = str2idx(train, pad)
     test = str2idx(test, pad)
-    return train, test
+    return train, test, n_vocab

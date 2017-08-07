@@ -5,7 +5,7 @@ from collections import defaultdict
 import numpy as np
 
 class Str2idx():
-    __MAX_COUNT = 5000
+    __MAX_COUNT = 256000
     __MIN_COUNT = 1
     __IGNORE = -1
 
@@ -20,6 +20,7 @@ class Str2idx():
         for w in words:
             w_freq[w] += 1
         w_freq = {w: f for w, f in w_freq.items() if self.__MIN_COUNT <= f <= self.__MAX_COUNT}
+        self.__n_vocab = len(w_freq) + 1
 
         self.w_dic = defaultdict(int)
         for i, v in enumerate(w_freq.keys()):
@@ -44,6 +45,9 @@ class Str2idx():
 
     def label2id(self, lab):
         return np.array(self.l_dic[lab], dtype=np.int32)
+
+    def get_n_vocab(self):
+        return self.__n_vocab
 
     def __call__(self, data, pad):
         return [(self.label2id(t), self.doc2ids(x, pad)) for t, x in zip(data["label"], data["text"])]
