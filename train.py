@@ -19,8 +19,13 @@ parser.add_argument("--n_units", type=int, default=256,
                     help="number of unit")
 parser.add_argument("--n_batch", type=int, default=32,
                     help="number of mini batch")
-parser.add_argument("--n_epoch", type=int, default=10,
+parser.add_argument("--n_epoch", type=int, default=50,
                     help="number of epoch")
+parser.add_argument("--w_decay", type=float, default=0.001,
+                    help="weight decay regularization value")
+parser.add_argument("--g_clip", type=float, default=5.0,
+                    help="gradient clipping value")
+
 
 args = parser.parse_args()
 nn_type = args.net
@@ -28,6 +33,9 @@ sep_mode = args.tokenizer
 n_units = args.n_units
 n_batch = args.n_batch
 n_epoch = args.n_epoch
+
+w_decay = args.w_decay
+g_clip = args.g_clip
 pad = nn_type == "cnn"
 
 if __name__ == "__main__":
@@ -36,6 +44,8 @@ if __name__ == "__main__":
 
     log_tracer("get train data")
     train, test, n_vocab = get_train_data(pad, sep_mode)
+    log_tracer.trace_label("train", train)
+    log_tracer.trace_label("test", test)
 
     if nn_type == "lstm":
         mlp = LSTM(n_vocab, n_units, N_OUT)
@@ -43,6 +53,8 @@ if __name__ == "__main__":
         mlp = CNN(n_vocab, n_units, N_OUT)
     opt = optimizers.Adam()
     opt.setup(mlp)
+    opt.add_hook(optimizer.WeightDecay(w_decay))
+    opt.add_hook(optimizer.GradientClipping(g_clip))
 
     log_tracer("start train")
     for epoch in range(n_epoch):

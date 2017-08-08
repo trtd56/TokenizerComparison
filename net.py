@@ -44,7 +44,7 @@ class LSTM(Chain):
 
 class CNN(Chain):
 
-    def __init__(self, n_vocab, n_units, n_out, filter_size=(2, 3, 4), stride=1, use_dropout=0.1, ignore_label=-1):
+    def __init__(self, n_vocab, n_units, n_out, filter_size=(3, 4, 5), stride=1, use_dropout=0.5, ignore_label=-1):
         super(CNN, self).__init__()
         initializer = initializers.HeNormal()
         with self.init_scope():
